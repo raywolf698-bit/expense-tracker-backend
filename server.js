@@ -1,31 +1,43 @@
-const mysql = require('mysql2/promise');
+const express = require('express');
+const cors = require('cors');
+const helmet = require('helmet');
+const morgan = require('morgan');
+const path = require('path');
 require('dotenv').config();
 
-const pool = mysql.createPool({
-  host:     process.env.DB_HOST,
-  port:     Number(process.env.DB_PORT) || 4000,
-  user:     process.env.DB_USER,
-  password: process.env.DB_PASSWORD,
-  database: process.env.DB_NAME,
-  ssl: {
-    minVersion: 'TLSv1.2',
-    rejectUnauthorized: true
-  },
-  waitForConnections: true,
-  connectionLimit: 1,  // ← changed from 10 (important for serverless!)
-  queueLimit: 0
+const expenseRoutes = require('./routes/expenses');
+const budgetRoutes = require('./routes/budgets');
+const summaryRoutes = require('./routes/summary');
+
+const app = express();
+
+// Middleware
+app.use(helmet({ contentSecurityPolicy: false, crossOriginEmbedderPolicy: false }));
+app.use(cors());
+app.use(morgan('dev'));
+app.use(express.json());
+
+// Routes
+app.use('/api/expenses', expenseRoutes);
+app.use('/api/budgets', budgetRoutes);
+app.use('/api/summary', summaryRoutes);
+
+// Health check
+app.get('/api/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Test connection on startup
-(async () => {
-  try {
-    const conn = await pool.getConnection();
-    console.log('✅ MySQL connected');
-    conn.release();
-  } catch (err) {
-    console.error('❌ MySQL connection failed:', err.message);
-    // ← process.exit(1) removed — no longer crashes Vercel
-  }
-})();
+// Serve frontend
+app.use(express.static(path.join(__dirname)));
 
-module.exports = pool;
+// Error handler
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(err.status || 500).json({
+    error: err.message || 'Internal Server Error'
+  });
+});
+
+// ← app.listen removed for Vercel serverless
+
+module.exports = app;
