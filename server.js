@@ -30,6 +30,11 @@ app.get('/api/health', (req, res) => {
 // Serve frontend
 app.use(express.static(path.join(__dirname)));
 
+// Serve index.html at root
+app.get('/', (req, res) => {
+  res.sendFile(path.join(__dirname, 'index.html'));
+});
+
 // Error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
