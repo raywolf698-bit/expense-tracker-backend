@@ -32,7 +32,6 @@
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   html { scroll-behavior: smooth; }
 
   body {
@@ -43,41 +42,37 @@
     overflow-x: hidden;
   }
 
-  /* Noise texture overlay — FIX: z-index lowered to 1 so sidebar can go above it */
   body::before {
     content: '';
     position: fixed;
     inset: 0;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
     pointer-events: none;
-    z-index: 1; /* FIX: was 9999, now 1 so sidebar (z-index 50) renders above it */
+    z-index: 0;
     opacity: 0.4;
   }
 
-  /* Ambient glow */
   body::after {
     content: '';
     position: fixed;
-    top: -200px;
-    left: 50%;
+    top: -200px; left: 50%;
     transform: translateX(-50%);
-    width: 600px;
-    height: 400px;
+    width: 600px; height: 400px;
     background: radial-gradient(ellipse, rgba(0,255,127,0.08) 0%, transparent 70%);
     pointer-events: none;
     z-index: 0;
   }
 
-  /* ── Layout ── */
+  /* ── Desktop layout: sidebar is a real grid column ── */
   .app {
     display: grid;
     grid-template-columns: 280px 1fr;
     min-height: 100vh;
     position: relative;
-    z-index: 2; /* FIX: above the noise/glow pseudo-elements */
+    z-index: 1;
   }
 
-  /* ── Sidebar ── */
+  /* ── Sidebar — in normal flow on desktop, fixed on mobile ── */
   .sidebar {
     background: var(--surface);
     border-right: 1px solid var(--border);
@@ -89,140 +84,33 @@
     top: 0;
     height: 100vh;
     overflow-y: auto;
+    /* No z-index needed on desktop — it's in normal flow */
   }
 
-  .logo {
-    font-family: 'Instrument Serif', serif;
-    font-style: italic;
-    font-size: 26px;
-    letter-spacing: -0.5px;
-    color: var(--text);
-    padding: 4px 8px;
-  }
-  .logo span {
-    color: var(--accent);
-    text-shadow: 0 0 20px rgba(0,255,127,0.5);
-  }
+  .logo { font-family: 'Instrument Serif', serif; font-style: italic; font-size: 26px; letter-spacing: -0.5px; color: var(--text); padding: 4px 8px; }
+  .logo span { color: var(--accent); text-shadow: 0 0 20px rgba(0,255,127,0.5); }
 
   .nav { display: flex; flex-direction: column; gap: 3px; }
-
-  .nav-btn {
-    background: none;
-    border: none;
-    color: var(--muted);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 11px 14px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    text-align: left;
-    transition: all 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    letter-spacing: 0.3px;
-  }
+  .nav-btn { background: none; border: none; color: var(--muted); font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 500; padding: 11px 14px; border-radius: var(--radius-sm); cursor: pointer; text-align: left; transition: all 0.2s; display: flex; align-items: center; gap: 10px; letter-spacing: 0.3px; }
   .nav-btn:hover { color: var(--text2); background: var(--surface2); }
-  .nav-btn.active {
-    color: var(--accent);
-    background: var(--accent-glow2);
-    border: 1px solid rgba(0,255,127,0.12);
-  }
+  .nav-btn.active { color: var(--accent); background: var(--accent-glow2); border: 1px solid rgba(0,255,127,0.12); }
   .nav-btn .icon { font-size: 15px; }
 
-  /* Budget widget */
-  .budget-widget {
-    background: linear-gradient(135deg, var(--surface2) 0%, var(--surface3) 100%);
-    border: 1px solid var(--border2);
-    border-radius: var(--radius);
-    padding: 20px;
-    position: relative;
-    overflow: hidden;
-  }
-  .budget-widget::before {
-    content: '';
-    position: absolute;
-    top: -30px; right: -30px;
-    width: 100px; height: 100px;
-    background: radial-gradient(circle, rgba(0,255,127,0.1) 0%, transparent 70%);
-  }
-  .budget-label {
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    margin-bottom: 10px;
-    font-weight: 600;
-  }
-  .budget-amount {
-    font-family: 'Instrument Serif', serif;
-    font-size: 32px;
-    color: var(--accent);
-    text-shadow: 0 0 30px rgba(0,255,127,0.4);
-    line-height: 1;
-  }
-  .budget-sub {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 6px;
-    line-height: 1.5;
-  }
-  .budget-bar {
-    height: 3px;
-    background: var(--border);
-    border-radius: 2px;
-    margin-top: 14px;
-    overflow: hidden;
-  }
-  .budget-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--accent-dim), var(--accent));
-    border-radius: 2px;
-    transition: width 0.6s cubic-bezier(0.4,0,0.2,1);
-    box-shadow: 0 0 8px rgba(0,255,127,0.4);
-  }
-  .budget-bar-fill.danger {
-    background: linear-gradient(90deg, #ff4757, #ff6b81);
-    box-shadow: 0 0 8px rgba(255,71,87,0.4);
-  }
+  .budget-widget { background: linear-gradient(135deg, var(--surface2) 0%, var(--surface3) 100%); border: 1px solid var(--border2); border-radius: var(--radius); padding: 20px; position: relative; overflow: hidden; }
+  .budget-widget::before { content: ''; position: absolute; top: -30px; right: -30px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(0,255,127,0.1) 0%, transparent 70%); }
+  .budget-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; margin-bottom: 10px; font-weight: 600; }
+  .budget-amount { font-family: 'Instrument Serif', serif; font-size: 32px; color: var(--accent); text-shadow: 0 0 30px rgba(0,255,127,0.4); line-height: 1; }
+  .budget-sub { font-size: 11px; color: var(--muted); margin-top: 6px; line-height: 1.5; }
+  .budget-bar { height: 3px; background: var(--border); border-radius: 2px; margin-top: 14px; overflow: hidden; }
+  .budget-bar-fill { height: 100%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); border-radius: 2px; transition: width 0.6s cubic-bezier(0.4,0,0.2,1); box-shadow: 0 0 8px rgba(0,255,127,0.4); }
+  .budget-bar-fill.danger { background: linear-gradient(90deg, #ff4757, #ff6b81); box-shadow: 0 0 8px rgba(255,71,87,0.4); }
   .budget-edit { display: flex; gap: 8px; margin-top: 14px; }
-  .budget-edit input {
-    flex: 1;
-    background: var(--bg);
-    border: 1px solid var(--border2);
-    color: var(--text);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 12px;
-    padding: 7px 10px;
-    border-radius: 8px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
+  .budget-edit input { flex: 1; background: var(--bg); border: 1px solid var(--border2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 12px; padding: 7px 10px; border-radius: 8px; outline: none; transition: border-color 0.2s; }
   .budget-edit input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow2); }
-  .btn-xs {
-    background: var(--accent);
-    color: #000;
-    border: none;
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 11px;
-    letter-spacing: 0.5px;
-    padding: 7px 14px;
-    border-radius: 8px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
+  .btn-xs { background: var(--accent); color: #000; border: none; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 11px; letter-spacing: 0.5px; padding: 7px 14px; border-radius: 8px; cursor: pointer; transition: all 0.2s; }
   .btn-xs:hover { background: #33ff99; box-shadow: 0 0 12px rgba(0,255,127,0.4); }
 
-  /* Sidebar bottom info */
-  .sidebar-footer {
-    margin-top: auto;
-    padding: 14px;
-    background: var(--surface2);
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--border);
-  }
+  .sidebar-footer { margin-top: auto; padding: 14px; background: var(--surface2); border-radius: var(--radius-sm); border: 1px solid var(--border); }
   .sidebar-footer-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 4px; }
   .sidebar-footer-value { font-size: 11px; color: var(--text2); }
 
@@ -231,257 +119,61 @@
 
   .page { display: none; }
   .page.active { display: block; animation: fadeUp 0.35s cubic-bezier(0.4,0,0.2,1); }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(12px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
 
-  /* ── Page header ── */
   .page-header { margin-bottom: 32px; }
-  .page-title {
-    font-family: 'Instrument Serif', serif;
-    font-size: 40px;
-    font-weight: 400;
-    letter-spacing: -1.5px;
-    line-height: 1;
-  }
-  .page-title em {
-    font-style: italic;
-    color: var(--accent);
-    text-shadow: 0 0 40px rgba(0,255,127,0.3);
-  }
+  .page-title { font-family: 'Instrument Serif', serif; font-size: 40px; font-weight: 400; letter-spacing: -1.5px; line-height: 1; }
+  .page-title em { font-style: italic; color: var(--accent); text-shadow: 0 0 40px rgba(0,255,127,0.3); }
   .page-sub { color: var(--muted); font-size: 13px; margin-top: 8px; letter-spacing: 0.2px; }
 
-  /* ── Add expense form ── */
-  .add-form {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 24px;
-    margin-bottom: 28px;
-    display: grid;
-    grid-template-columns: 2fr 1fr 1fr 1fr auto;
-    gap: 10px;
-    align-items: end;
-  }
-
+  .add-form { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 24px; margin-bottom: 28px; display: grid; grid-template-columns: 2fr 1fr 1fr 1fr auto; gap: 10px; align-items: end; }
   .field { display: flex; flex-direction: column; gap: 6px; }
-  .field label {
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    font-weight: 600;
-  }
-  .field input, .field select {
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    color: var(--text);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 13px;
-    padding: 10px 14px;
-    border-radius: var(--radius-sm);
-    outline: none;
-    transition: all 0.2s;
-    width: 100%;
-  }
-  .field input:focus, .field select:focus {
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px var(--accent-glow2);
-    background: var(--surface3);
-  }
+  .field label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; font-weight: 600; }
+  .field input, .field select { background: var(--surface2); border: 1px solid var(--border2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 13px; padding: 10px 14px; border-radius: var(--radius-sm); outline: none; transition: all 0.2s; width: 100%; }
+  .field input:focus, .field select:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow2); background: var(--surface3); }
   .field select option { background: var(--surface2); }
   .field input::placeholder { color: var(--muted); }
 
-  .btn-add {
-    background: var(--accent);
-    color: #000;
-    border: none;
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 13px;
-    letter-spacing: 0.3px;
-    padding: 10px 22px;
-    border-radius: var(--radius-sm);
-    cursor: pointer;
-    transition: all 0.2s;
-    white-space: nowrap;
-    height: 42px;
-  }
-  .btn-add:hover {
-    background: #33ff99;
-    box-shadow: 0 4px 24px rgba(0,255,127,0.35);
-    transform: translateY(-1px);
-  }
+  .btn-add { background: var(--accent); color: #000; border: none; font-family: 'Space Grotesk', sans-serif; font-weight: 700; font-size: 13px; letter-spacing: 0.3px; padding: 10px 22px; border-radius: var(--radius-sm); cursor: pointer; transition: all 0.2s; white-space: nowrap; height: 42px; }
+  .btn-add:hover { background: #33ff99; box-shadow: 0 4px 24px rgba(0,255,127,0.35); transform: translateY(-1px); }
   .btn-add:active { transform: translateY(0); }
   .btn-add:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
 
-  /* ── Filter tabs ── */
   .filter-tabs { display: flex; gap: 6px; margin-bottom: 20px; flex-wrap: wrap; }
-  .tab {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    padding: 6px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
+  .tab { background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
   .tab:hover { color: var(--text2); border-color: var(--border2); }
-  .tab.active {
-    color: #000;
-    background: var(--accent);
-    border-color: var(--accent);
-    box-shadow: 0 0 12px rgba(0,255,127,0.25);
-  }
+  .tab.active { color: #000; background: var(--accent); border-color: var(--accent); box-shadow: 0 0 12px rgba(0,255,127,0.25); }
 
-  /* ── Expense list ── */
-  .expense-list { display: flex; flex-direction: column; gap: 6px; }
+  .expense-item { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); padding: 14px 18px; display: flex; align-items: center; gap: 14px; transition: all 0.2s; animation: slideIn 0.3s cubic-bezier(0.4,0,0.2,1); }
+  @keyframes slideIn { from { opacity: 0; transform: translateX(-8px); } to { opacity: 1; transform: translateX(0); } }
+  .expense-item:hover { border-color: var(--border2); background: var(--surface2); transform: translateX(2px); }
 
-  .expense-item {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 14px 18px;
-    display: flex;
-    align-items: center;
-    gap: 14px;
-    transition: all 0.2s;
-    animation: slideIn 0.3s cubic-bezier(0.4,0,0.2,1);
-  }
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateX(-8px); }
-    to { opacity: 1; transform: translateX(0); }
-  }
-  .expense-item:hover {
-    border-color: var(--border2);
-    background: var(--surface2);
-    transform: translateX(2px);
-  }
-
-  .cat-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    flex-shrink: 0;
-    box-shadow: 0 0 6px currentColor;
-  }
-
+  .cat-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; box-shadow: 0 0 6px currentColor; }
   .expense-desc { flex: 1; font-size: 13px; font-weight: 500; color: var(--text); }
   .expense-date { font-size: 11px; color: var(--muted); white-space: nowrap; }
-  .expense-cat {
-    font-size: 10px;
-    padding: 3px 9px;
-    border-radius: 10px;
-    background: var(--surface2);
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 0.8px;
-    font-weight: 600;
-    border: 1px solid var(--border);
-    white-space: nowrap;
-  }
-  .expense-amount {
-    font-family: 'Instrument Serif', serif;
-    font-size: 18px;
-    min-width: 90px;
-    text-align: right;
-    color: var(--text);
-  }
-  .btn-del {
-    background: none;
-    border: 1px solid transparent;
-    color: var(--muted);
-    font-size: 14px;
-    width: 28px; height: 28px;
-    border-radius: 6px;
-    cursor: pointer;
-    transition: all 0.2s;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-  }
-  .btn-del:hover {
-    color: var(--danger);
-    border-color: rgba(255,71,87,0.3);
-    background: rgba(255,71,87,0.08);
-  }
+  .expense-cat { font-size: 10px; padding: 3px 9px; border-radius: 10px; background: var(--surface2); color: var(--muted); text-transform: uppercase; letter-spacing: 0.8px; font-weight: 600; border: 1px solid var(--border); white-space: nowrap; }
+  .expense-amount { font-family: 'Instrument Serif', serif; font-size: 18px; min-width: 90px; text-align: right; color: var(--text); }
+  .btn-del { background: none; border: 1px solid transparent; color: var(--muted); font-size: 14px; width: 28px; height: 28px; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+  .btn-del:hover { color: var(--danger); border-color: rgba(255,71,87,0.3); background: rgba(255,71,87,0.08); }
 
-  .empty {
-    text-align: center;
-    padding: 60px 20px;
-    color: var(--muted);
-    font-size: 13px;
-    line-height: 1.8;
-  }
+  .empty { text-align: center; padding: 60px 20px; color: var(--muted); font-size: 13px; line-height: 1.8; }
   .empty .big { font-size: 36px; margin-bottom: 12px; }
 
-  /* ── Summary page ── */
-  .stats-grid {
-    display: grid;
-    grid-template-columns: repeat(4, 1fr);
-    gap: 14px;
-    margin-bottom: 28px;
-  }
-
-  .stat-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 22px 20px;
-    transition: all 0.2s;
-    position: relative;
-    overflow: hidden;
-  }
-  .stat-card::after {
-    content: '';
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 2px;
-    background: var(--accent);
-    transform: scaleX(0);
-    transition: transform 0.3s;
-    transform-origin: left;
-  }
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 28px; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px 20px; transition: all 0.2s; position: relative; overflow: hidden; }
+  .stat-card::after { content: ''; position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: var(--accent); transform: scaleX(0); transition: transform 0.3s; transform-origin: left; }
   .stat-card:hover::after { transform: scaleX(1); }
   .stat-card:hover { border-color: var(--border2); background: var(--surface2); }
-
-  .stat-label {
-    font-size: 10px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    margin-bottom: 10px;
-    font-weight: 600;
-  }
-  .stat-value {
-    font-family: 'Instrument Serif', serif;
-    font-size: 28px;
-    line-height: 1;
-  }
+  .stat-label { font-size: 10px; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px; font-weight: 600; }
+  .stat-value { font-family: 'Instrument Serif', serif; font-size: 28px; line-height: 1; }
   .stat-value.green { color: var(--accent); text-shadow: 0 0 20px rgba(0,255,127,0.3); }
   .stat-value.red { color: var(--danger); }
   .stat-sub { font-size: 11px; color: var(--muted); margin-top: 6px; }
 
   .summary-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 22px; }
+  .card-title { font-size: 10px; font-weight: 700; margin-bottom: 20px; color: var(--muted); text-transform: uppercase; letter-spacing: 2px; }
 
-  .card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    padding: 22px;
-  }
-  .card-title {
-    font-size: 10px;
-    font-weight: 700;
-    margin-bottom: 20px;
-    color: var(--muted);
-    text-transform: uppercase;
-    letter-spacing: 2px;
-  }
-
-  /* Category breakdown */
   .cat-row { margin-bottom: 14px; }
   .cat-row-header { display: flex; justify-content: space-between; margin-bottom: 7px; font-size: 12px; align-items: center; }
   .cat-row-name { display: flex; align-items: center; gap: 8px; font-weight: 500; }
@@ -489,172 +181,87 @@
   .cat-bar { height: 4px; background: var(--border); border-radius: 2px; overflow: hidden; }
   .cat-bar-fill { height: 100%; border-radius: 2px; transition: width 0.9s cubic-bezier(0.4,0,0.2,1); }
 
-  /* Daily chart */
   .chart { display: flex; align-items: flex-end; gap: 3px; height: 120px; }
-  .bar-wrap {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 4px;
-    height: 100%;
-    justify-content: flex-end;
-  }
-  .bar {
-    width: 100%;
-    border-radius: 3px 3px 0 0;
-    background: var(--surface3);
-    border: 1px solid var(--border2);
-    transition: height 0.6s cubic-bezier(0.4,0,0.2,1);
-    cursor: pointer;
-    min-height: 4px;
-    position: relative;
-  }
+  .bar-wrap { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; height: 100%; justify-content: flex-end; }
+  .bar { width: 100%; border-radius: 3px 3px 0 0; background: var(--surface3); border: 1px solid var(--border2); transition: height 0.6s cubic-bezier(0.4,0,0.2,1); cursor: pointer; min-height: 4px; }
   .bar:hover { opacity: 0.8; }
-  .bar.has-data {
-    background: linear-gradient(180deg, rgba(0,255,127,0.5) 0%, rgba(0,255,127,0.15) 100%);
-    border-color: rgba(0,255,127,0.3);
-  }
-  .bar.high {
-    background: linear-gradient(180deg, var(--accent) 0%, var(--accent-dim) 100%);
-    border-color: var(--accent);
-    box-shadow: 0 0 10px rgba(0,255,127,0.3);
-  }
+  .bar.has-data { background: linear-gradient(180deg, rgba(0,255,127,0.5) 0%, rgba(0,255,127,0.15) 100%); border-color: rgba(0,255,127,0.3); }
+  .bar.high { background: linear-gradient(180deg, var(--accent) 0%, var(--accent-dim) 100%); border-color: var(--accent); box-shadow: 0 0 10px rgba(0,255,127,0.3); }
   .bar-day { font-size: 9px; color: var(--muted); }
 
-  /* Month tabs */
   .month-tabs { display: flex; gap: 6px; margin-bottom: 24px; flex-wrap: wrap; }
-  .month-tab {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--muted);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 12px;
-    font-weight: 500;
-    padding: 6px 14px;
-    border-radius: 20px;
-    cursor: pointer;
-    transition: all 0.2s;
-  }
+  .month-tab { background: var(--surface); border: 1px solid var(--border); color: var(--muted); font-family: 'Space Grotesk', sans-serif; font-size: 12px; font-weight: 500; padding: 6px 14px; border-radius: 20px; cursor: pointer; transition: all 0.2s; }
   .month-tab:hover { color: var(--text2); }
-  .month-tab.active {
-    color: #000;
-    background: var(--accent);
-    border-color: var(--accent);
-    box-shadow: 0 0 12px rgba(0,255,127,0.25);
-  }
+  .month-tab.active { color: #000; background: var(--accent); border-color: var(--accent); box-shadow: 0 0 12px rgba(0,255,127,0.25); }
 
-  /* ── Toast ── */
-  .toast {
-    position: fixed;
-    bottom: 28px; right: 28px;
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    color: var(--text);
-    font-family: 'Space Grotesk', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    padding: 12px 20px;
-    border-radius: var(--radius-sm);
-    transform: translateY(80px);
-    opacity: 0;
-    transition: all 0.3s cubic-bezier(0.4,0,0.2,1);
-    z-index: 200; /* FIX: high enough to show above content */
-  }
-  .toast.show {
-    transform: translateY(0);
-    opacity: 1;
-    border-color: rgba(0,255,127,0.3);
-    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-  }
+  .toast { position: fixed; bottom: 28px; right: 28px; background: var(--surface2); border: 1px solid var(--border2); color: var(--text); font-family: 'Space Grotesk', sans-serif; font-size: 13px; font-weight: 500; padding: 12px 20px; border-radius: var(--radius-sm); transform: translateY(80px); opacity: 0; transition: all 0.3s cubic-bezier(0.4,0,0.2,1); z-index: 9999; }
+  .toast.show { transform: translateY(0); opacity: 1; border-color: rgba(0,255,127,0.3); box-shadow: 0 4px 24px rgba(0,0,0,0.4); }
   .toast.error { border-color: rgba(255,71,87,0.4); }
 
-  .loading {
-    text-align: center;
-    padding: 40px;
-    color: var(--muted);
-    font-size: 13px;
-  }
+  .loading { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
 
-  /* ── Mobile hamburger ── */
-  .hamburger {
-    display: none;
-    position: fixed;
-    top: 16px; left: 16px;
-    z-index: 60; /* FIX: above sidebar overlay */
-    background: var(--surface2);
-    border: 1px solid var(--border2);
-    color: var(--text);
-    width: 40px; height: 40px;
-    border-radius: 10px;
-    cursor: pointer;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 5px;
-    transition: all 0.2s;
-  }
-  .hamburger span {
-    display: block;
-    width: 18px;
-    height: 1.5px;
-    background: var(--text);
-    border-radius: 1px;
-    transition: all 0.3s;
-  }
+  /* ── Mobile ── */
+  .hamburger { display: none; position: fixed; top: 16px; left: 16px; z-index: 9998; background: var(--surface2); border: 1px solid var(--border2); color: var(--text); width: 40px; height: 40px; border-radius: 10px; cursor: pointer; flex-direction: column; align-items: center; justify-content: center; gap: 5px; transition: all 0.2s; }
+  .hamburger span { display: block; width: 18px; height: 1.5px; background: var(--text); border-radius: 1px; transition: all 0.3s; }
   .hamburger:hover { border-color: var(--accent); }
 
-  /* FIX: Overlay — removed backdrop-filter: blur entirely.
-     The blur was applied to everything BEHIND the overlay including the sidebar,
-     since sidebar and overlay are DOM siblings. Plain semi-transparent bg is enough. */
+  /*
+   * THE REAL FIX:
+   * backdrop-filter creates a NEW stacking context on the element it's applied to.
+   * When overlay (with backdrop-filter) and sidebar are siblings, the sidebar gets
+   * drawn into the overlay's stacking context and is blurred along with everything else.
+   *
+   * Solution: Use NO backdrop-filter on the overlay. A plain dark rgba background
+   * is visually equivalent and has zero stacking context side-effects.
+   */
   .sidebar-overlay {
     display: none;
     position: fixed;
     inset: 0;
-    background: rgba(0,0,0,0.65);
-    z-index: 49;
-    /* NO backdrop-filter here — it blurred the sidebar too */
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 998;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    /* backdrop-filter: REMOVED — this was the root cause of sidebar blur */
   }
+  .sidebar-overlay.open { opacity: 1; pointer-events: all; }
 
-  /* ── Responsive ── */
-
-  /* Tablet */
   @media (max-width: 1024px) {
     .stats-grid { grid-template-columns: repeat(2, 1fr); }
     .add-form { grid-template-columns: 1fr 1fr; }
     .add-form .btn-add { grid-column: 1 / -1; }
   }
 
-  /* Mobile/Tablet sidebar */
   @media (max-width: 900px) {
     .app { grid-template-columns: 1fr; }
-
     .hamburger { display: flex; }
-    .sidebar-overlay { display: block; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
-    .sidebar-overlay.open { opacity: 1; pointer-events: all; }
+    .sidebar-overlay { display: block; }
 
+    /*
+     * On mobile the sidebar becomes position:fixed.
+     * z-index 999 puts it ABOVE the overlay (998).
+     * Since it has a solid opaque background (var(--surface)),
+     * nothing from behind bleeds through — no blur, no transparency issues.
+     */
     .sidebar {
       position: fixed;
       top: 0; left: 0;
       width: 280px;
       height: 100vh;
-      z-index: 50; /* FIX: above overlay (49) and noise texture (1), below hamburger (60) */
+      z-index: 999;
       transform: translateX(-100%);
       transition: transform 0.35s cubic-bezier(0.4,0,0.2,1);
-      box-shadow: 4px 0 40px rgba(0,0,0,0.5);
+      box-shadow: 4px 0 40px rgba(0,0,0,0.6);
+      background: var(--surface); /* solid — ensures nothing bleeds through */
     }
     .sidebar.open { transform: translateX(0); }
 
-    .main {
-      padding: 72px 20px 32px;
-      grid-column: 1;
-    }
-
+    .main { padding: 72px 20px 32px; grid-column: 1; }
     .page-title { font-size: 32px; }
     .summary-grid { grid-template-columns: 1fr; }
   }
 
-  /* Small mobile */
   @media (max-width: 480px) {
     .stats-grid { grid-template-columns: 1fr 1fr; gap: 10px; }
     .stat-card { padding: 16px 14px; }
@@ -670,13 +277,11 @@
     .toast { bottom: 16px; right: 16px; left: 16px; text-align: center; }
   }
 
-  /* iPad landscape */
   @media (min-width: 900px) and (max-width: 1100px) {
     .app { grid-template-columns: 240px 1fr; }
     .main { padding: 28px 28px; }
   }
 
-  /* Scrollbar styling */
   ::-webkit-scrollbar { width: 5px; height: 5px; }
   ::-webkit-scrollbar-track { background: var(--bg); }
   ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 10px; }
@@ -685,7 +290,6 @@
 </head>
 <body>
 
-<!-- Mobile hamburger -->
 <button class="hamburger" id="hamburger" onclick="toggleSidebar()">
   <span></span><span></span><span></span>
 </button>
@@ -725,7 +329,6 @@
   <!-- ── Main ── -->
   <main class="main">
 
-    <!-- EXPENSES PAGE -->
     <div class="page active" id="page-expenses">
       <div class="page-header">
         <div class="page-title">Daily <em>Expenses</em></div>
@@ -772,7 +375,6 @@
       <div id="expenseList"><div class="loading">Loading expenses...</div></div>
     </div>
 
-    <!-- SUMMARY PAGE -->
     <div class="page" id="page-summary">
       <div class="page-header">
         <div class="page-title">Monthly <em>Summary</em></div>
@@ -823,10 +425,7 @@
 
 <script>
 const API = '/api';
-const CAT_COLORS = {
-  food: '#ff6b6b', transport: '#4ecdc4', shopping: '#ffe66d',
-  health: '#7bed9f', entertainment: '#c8a2c8', other: '#74b9ff'
-};
+const CAT_COLORS = { food:'#ff6b6b', transport:'#4ecdc4', shopping:'#ffe66d', health:'#7bed9f', entertainment:'#c8a2c8', other:'#74b9ff' };
 const MONTHS = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
 
 let currentFilter = 'all';
@@ -835,7 +434,6 @@ let currentMonth  = new Date().getMonth() + 1;
 let expenses      = [];
 let budgetData    = { amount: 0 };
 
-// ── Sidebar toggle ────────────────────────────────────────────────────────
 function toggleSidebar() {
   document.getElementById('sidebar').classList.toggle('open');
   document.getElementById('sidebarOverlay').classList.toggle('open');
@@ -845,18 +443,14 @@ function closeSidebar() {
   document.getElementById('sidebarOverlay').classList.remove('open');
 }
 
-// ── Init ──────────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  const today = new Date().toISOString().split('T')[0];
-  document.getElementById('expDate').value = today;
-  const dateStr = new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
-  document.getElementById('todayDate').textContent = dateStr;
+  document.getElementById('expDate').value = new Date().toISOString().split('T')[0];
+  document.getElementById('todayDate').textContent = new Date().toLocaleDateString('en-US', { weekday:'long', year:'numeric', month:'long', day:'numeric' });
   document.getElementById('sidebarDate').textContent = new Date().toLocaleDateString('en-US', { month:'short', day:'numeric', year:'numeric' });
   loadBudget();
   loadExpenses();
 });
 
-// ── Page navigation ───────────────────────────────────────────────────────
 function showPage(name, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
@@ -866,7 +460,6 @@ function showPage(name, btn) {
   closeSidebar();
 }
 
-// ── Budget ────────────────────────────────────────────────────────────────
 async function loadBudget() {
   try {
     const r = await fetch(`${API}/budgets?year=${currentYear}&month=${currentMonth}`);
@@ -890,11 +483,7 @@ async function saveBudget() {
   const val = Number(document.getElementById('budgetInput').value);
   if (!val || val <= 0) return toast('Enter a valid amount', true);
   try {
-    const r = await fetch(`${API}/budgets`, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ year: currentYear, month: currentMonth, amount: val })
-    });
+    const r = await fetch(`${API}/budgets`, { method:'PUT', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ year: currentYear, month: currentMonth, amount: val }) });
     budgetData = await r.json();
     updateBudgetWidget();
     document.getElementById('budgetInput').value = '';
@@ -902,7 +491,6 @@ async function saveBudget() {
   } catch(e) { toast('Failed to update budget', true); }
 }
 
-// ── Expenses ──────────────────────────────────────────────────────────────
 async function loadExpenses() {
   try {
     let url = `${API}/expenses?year=${currentYear}&month=${currentMonth}&limit=100`;
@@ -913,17 +501,13 @@ async function loadExpenses() {
     renderExpenses();
     updateBudgetWidget();
   } catch(e) {
-    document.getElementById('expenseList').innerHTML =
-      '<div class="empty"><div class="big">⚠️</div>Cannot connect to server.<br/>Make sure backend is running.</div>';
+    document.getElementById('expenseList').innerHTML = '<div class="empty"><div class="big">⚠️</div>Cannot connect to server.<br/>Make sure backend is running.</div>';
   }
 }
 
 function renderExpenses() {
   const list = document.getElementById('expenseList');
-  if (!expenses.length) {
-    list.innerHTML = '<div class="empty"><div class="big">🌿</div>No expenses yet.<br/>Add your first one above!</div>';
-    return;
-  }
+  if (!expenses.length) { list.innerHTML = '<div class="empty"><div class="big">🌿</div>No expenses yet.<br/>Add your first one above!</div>'; return; }
   list.innerHTML = expenses.map(e => `
     <div class="expense-item" id="exp-${e.id}">
       <div class="cat-dot" style="background:${CAT_COLORS[e.category]};color:${CAT_COLORS[e.category]}"></div>
@@ -937,21 +521,17 @@ function renderExpenses() {
 }
 
 async function addExpense() {
-  const desc   = document.getElementById('desc').value.trim();
+  const desc = document.getElementById('desc').value.trim();
   const amount = document.getElementById('amount').value;
-  const cat    = document.getElementById('category').value;
-  const date   = document.getElementById('expDate').value;
+  const cat = document.getElementById('category').value;
+  const date = document.getElementById('expDate').value;
   if (!desc || !amount || !date) return toast('Fill in all fields', true);
   const btn = document.getElementById('addBtn');
   btn.disabled = true; btn.textContent = '...';
   try {
-    const r = await fetch(`${API}/expenses`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ description: desc, amount: Number(amount), category: cat, expense_date: date })
-    });
+    const r = await fetch(`${API}/expenses`, { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ description:desc, amount:Number(amount), category:cat, expense_date:date }) });
     if (!r.ok) throw new Error();
-    document.getElementById('desc').value   = '';
+    document.getElementById('desc').value = '';
     document.getElementById('amount').value = '';
     toast('Expense added ✓');
     await loadExpenses();
@@ -961,11 +541,8 @@ async function addExpense() {
 
 async function deleteExpense(id) {
   if (!confirm('Delete this expense?')) return;
-  try {
-    await fetch(`${API}/expenses/${id}`, { method: 'DELETE' });
-    toast('Deleted');
-    await loadExpenses();
-  } catch(e) { toast('Failed to delete', true); }
+  try { await fetch(`${API}/expenses/${id}`, { method:'DELETE' }); toast('Deleted'); await loadExpenses(); }
+  catch(e) { toast('Failed to delete', true); }
 }
 
 function setFilter(cat, el) {
@@ -975,7 +552,6 @@ function setFilter(cat, el) {
   loadExpenses();
 }
 
-// ── Summary ───────────────────────────────────────────────────────────────
 async function loadSummary() {
   try {
     const mr = await fetch(`${API}/summary/months`);
@@ -993,8 +569,7 @@ function renderMonthTabs(months) {
     tabs.push({ year: d.getFullYear(), month: d.getMonth() + 1 });
   }
   document.getElementById('monthTabs').innerHTML = tabs.map(t => `
-    <button class="month-tab ${t.year===currentYear&&t.month===currentMonth?'active':''}"
-      onclick="selectMonth(${t.year},${t.month},this)">
+    <button class="month-tab ${t.year===currentYear&&t.month===currentMonth?'active':''}" onclick="selectMonth(${t.year},${t.month},this)">
       ${MONTHS[t.month-1]} ${t.year}
     </button>
   `).join('');
@@ -1016,30 +591,21 @@ async function loadSummaryData(year, month) {
     document.getElementById('s-remaining').textContent = '฿' + fmt(Math.max(0, d.remaining));
     document.getElementById('s-avg').textContent       = '฿' + fmt(d.daily_average);
     document.getElementById('s-txn').textContent       = `${d.transaction_count} transactions`;
-    const remEl = document.getElementById('s-remaining');
-    remEl.className = 'stat-value ' + (d.remaining < 0 ? 'red' : 'green');
+    document.getElementById('s-remaining').className   = 'stat-value ' + (d.remaining < 0 ? 'red' : 'green');
     renderCategoryBreakdown(d.categories);
     renderDailyChart(d.daily, year, month);
   } catch(e) { console.error(e); }
 }
 
 function renderCategoryBreakdown(cats) {
-  if (!cats || !cats.length) {
-    document.getElementById('catBreakdown').innerHTML = '<div class="loading">No data yet</div>';
-    return;
-  }
+  if (!cats || !cats.length) { document.getElementById('catBreakdown').innerHTML = '<div class="loading">No data yet</div>'; return; }
   document.getElementById('catBreakdown').innerHTML = cats.map(c => `
     <div class="cat-row">
       <div class="cat-row-header">
-        <div class="cat-row-name">
-          <div class="cat-dot" style="background:${CAT_COLORS[c.category]};color:${CAT_COLORS[c.category]}"></div>
-          ${c.category}
-        </div>
+        <div class="cat-row-name"><div class="cat-dot" style="background:${CAT_COLORS[c.category]};color:${CAT_COLORS[c.category]}"></div>${c.category}</div>
         <div>฿${fmt(c.total)} <span class="cat-pct">${c.percentage}%</span></div>
       </div>
-      <div class="cat-bar">
-        <div class="cat-bar-fill" style="width:${c.percentage}%;background:${CAT_COLORS[c.category]};box-shadow:0 0 6px ${CAT_COLORS[c.category]}66"></div>
-      </div>
+      <div class="cat-bar"><div class="cat-bar-fill" style="width:${c.percentage}%;background:${CAT_COLORS[c.category]};box-shadow:0 0 6px ${CAT_COLORS[c.category]}66"></div></div>
     </div>
   `).join('');
 }
@@ -1047,35 +613,20 @@ function renderCategoryBreakdown(cats) {
 function renderDailyChart(daily, year, month) {
   const daysInMonth = new Date(year, month, 0).getDate();
   const dayMap = {};
-  (daily || []).forEach(d => {
-    const day = new Date(d.expense_date).getDate();
-    dayMap[day] = Number(d.total);
-  });
+  (daily || []).forEach(d => { dayMap[new Date(d.expense_date).getDate()] = Number(d.total); });
   const max = Math.max(...Object.values(dayMap), 1);
   let html = '';
   for (let d = 1; d <= daysInMonth; d++) {
     const amt = dayMap[d] || 0;
-    const h   = Math.max(4, (amt / max) * 100);
-    const hi  = amt === max && amt > 0;
-    const hasData = amt > 0;
-    html += `
-      <div class="bar-wrap" title="Day ${d}: ฿${fmt(amt)}">
-        <div class="bar ${hi?'high':''} ${hasData?'has-data':''}" style="height:${h}px"></div>
-        ${d % 5 === 0 ? `<div class="bar-day">${d}</div>` : '<div class="bar-day"></div>'}
-      </div>`;
+    const h = Math.max(4, (amt / max) * 100);
+    html += `<div class="bar-wrap" title="Day ${d}: ฿${fmt(amt)}"><div class="bar ${amt===max&&amt>0?'high':''} ${amt>0?'has-data':''}" style="height:${h}px"></div>${d%5===0?`<div class="bar-day">${d}</div>`:'<div class="bar-day"></div>'}</div>`;
   }
   document.getElementById('dailyChart').innerHTML = html;
 }
 
-// ── Helpers ───────────────────────────────────────────────────────────────
-function fmt(n) {
-  return Number(n).toLocaleString('th-TH', { minimumFractionDigits: 0, maximumFractionDigits: 0 });
-}
-function formatDate(dateStr) {
-  const d = new Date(dateStr);
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-function toast(msg, isError = false) {
+function fmt(n) { return Number(n).toLocaleString('th-TH', { minimumFractionDigits:0, maximumFractionDigits:0 }); }
+function formatDate(dateStr) { return new Date(dateStr).toLocaleDateString('en-US', { month:'short', day:'numeric' }); }
+function toast(msg, isError=false) {
   const t = document.getElementById('toast');
   t.textContent = msg;
   t.className = 'toast show' + (isError ? ' error' : '');
